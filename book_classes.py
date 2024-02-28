@@ -59,7 +59,7 @@ class DatesLevel(BookTracker):
         DatesLevel.instance_count += 1
 
     # def defines the set_start_date method with 4 parameters, 3 parameters have a default value of None
-    def set_start_date(self, day=None, month=None, year=None):
+    def __set_date(self, date, day, month, year):
 
         # if the default value, None, is used, execute this code
         if None in [day, month, year]:
@@ -71,15 +71,26 @@ class DatesLevel(BookTracker):
             # str() function converts the object into a string
             # split method converts the string into a list, - indicates where to separate the items
             # new list is stored in self._start_date variable
-            self._start_date = str(current_date.date()).split('-')
+            date = str(current_date.date()).split('-')
             # Reassigns a new order for the date items of the list using their index (day, month, year)
-            self._start_date = [self._start_date[2], self._start_date[1], self._start_date[0]]
+            date = [date[2], date[1], date[0]]
+
+            return date
 
         # if arguments are passed to this method, numbers representing dates, execute this code
         else:
             # f string converts day, month, year to a string
-            # split method converts string to a list, separating items by - and assigns it to self._start_date variable
-            self._start_date = f'{day}-{month}-{year}'.split('-')
+            # split method converts string to a list, separating items by - and assigns it to self._start_date
+            date = f'{day}-{month}-{year}'.split('-')
+
+            return date
+
+    # def defines the set_start_date method with 4 parameters, 3 parameters have a default value of None
+    def set_start_date(self, day=None, month=None, year=None):
+
+        date = self._start_date
+
+        self._start_date = self.__set_date(date, day, month, year)
 
     # def statement defines the get_start_date method
     def get_start_date(self):
@@ -90,24 +101,9 @@ class DatesLevel(BookTracker):
     # def statement defines the set_start_date method with 4 parameters, 3 parameters have a default value of None
     def set_end_date(self, day=None, month=None, year=None):
 
-        # if the default value, None, is used, execute this code
-        if None in [day, month, year]:
-            # now() method returns a datetime object of the datetime class
-            # datetime object represents current date and time and assigns it to current_date variable
-            current_date = datetime.now()
-            # date() method extracts only the date from current_date object
-            # str() function converts the object into a string
-            # split method converts the string into a list, - indicates where to separate the items
-            # new list is stored in self._end_date variable
-            self._end_date = str(current_date.date()).split('-')
-            # Reassigns a new order for the date items of the list using their index (day, month, year)
-            self._end_date = [self._end_date[2], self._end_date[1], self._end_date[0]]
+        date = self._end_date
 
-        # if arguments are passed to this method, numbers representing dates, execute this code
-        else:
-            # f string converts day, month, year to a string
-            # split method converts string to a list, separating items by - and assigns it to self._start_date variable
-            self._end_date = f'{day}-{month}-{year}'.split('-')
+        self._end_date = self.__set_date(date, day, month, year)
 
     # def statement defines the get_end_date method
     def get_end_date(self):
@@ -178,7 +174,7 @@ class PagesLevel(DatesLevel):
         # super() initializes attributes inherited from the DatesLevel class
         super().__init__(title, author, genre)
         self._pages_count = pages
-        self.pages_finished = 0
+        self._pages_finished = 0
         # dunderscore means this is 'private' and should only be accessed within this class, not subclasses
         # percentage attribute tracks percentage of book read and is used for the award_badge method later
         self.__percentage = 0
@@ -188,47 +184,45 @@ class PagesLevel(DatesLevel):
     def set_end_date(self, day=None, month=None, year=None):
         # CUSTOM BEHAVIOUR
         # assign the value of self._pages_count to self.pages_finished to indicate the book is finished
-        self.pages_finished = self._pages_count
+        self._pages_finished = self._pages_count
 
-        # if the value of None is in day, month and year, execute this code
-        if None in [day, month, year]:
-            # now() method returns a datetime object of the datetime class
-            # datetime object represents current date and time and assigns it to current_date variable
-            current_date = datetime.now()
-            # date() method extracts only the date from current_date object
-            # str() function converts the object into a string
-            # split method converts the string into a list, - indicates where to separate the items
-            # new list is stored in self._end_date variable
-            self._end_date = str(current_date.date()).split('-')
-            self._end_date = [self._end_date[2], self._end_date[1], self._end_date[0]]
-        else:
-            # f string converts day, month, year to a string
-            # split method converts string to a list, separating items by - and assigns it to self._start_date variable
-            self._end_date = f'{day}-{month}-{year}'.split('-')
+        date = self._end_date
+
+        self._end_date = self.__set_date(date, day, month, year)
 
     # def statement defines the set_pages method, a setter, with two parameters
     def set_pages(self, pages):
         # if the self.pages_finished value is greater or equal to self._pages_count, execute this code
-        if self.pages_finished >= self._pages_count:
+        if self._pages_finished >= self._pages_count:
 
             # prints a string about max pages
             print('Maximum book pages reached.')
 
             # Assign the value of self._pages_count to self.pages_finished
-            self.pages_finished = self._pages_count
+            self._pages_finished = self._pages_count
 
         # else if self.pages_finished is less than self._pages_count, execute this code
         else:
             # assigns the value of pages to self.pages_finished
-            self.pages_finished = pages
+            self._pages_finished = pages
+
+    def get_pages(self):
+
+        return self._pages_finished
+
+    def set_percentage(self):
+        # equation returns the percentage finished and round() returns a rounded number, assigns it to self.__percentage
+        self.__percentage = round((self._pages_finished / self._pages_count) * 100)
+
+    def get_percentage(self):
+
+        return self.__percentage
 
     # def statement defines track_progress method, inherited from BookTracker, the abstract base class
     def track_progress(self):
-        # equation returns the percentage finished and round() returns a rounded number, assigns it to self.__percentage
-        self.__percentage = round((self.pages_finished / self._pages_count) * 100)
 
         # returns a string about percentage of pages finished
-        return f'{self._book_title}: {self.__percentage}% Done\n{self.pages_finished}/{self._pages_count} pages finished'
+        return f'{self._book_title}: {self.__percentage}% Done\n{self._pages_finished}/{self._pages_count} pages finished'
 
     # def statement defines the award_badge method, inherited from the BookTracker abstract base class
     def award_badge(self):
@@ -291,6 +285,10 @@ if __name__ == '__main__':
     britney_book.set_start_date(29, 9, 2023)
 
     britney_book.set_pages(100)
+    britney_book.set_percentage()
+
+    print(britney_book.get_pages(), 'Pages,', britney_book.get_percentage(), '%', '\n')
+
     print(britney_book, '\n')
 
     # BOOK TRACKING & AWARDS -------------------------------------------------------------------------------------------
